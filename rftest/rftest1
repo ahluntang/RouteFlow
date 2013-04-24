@@ -90,6 +90,9 @@ echo_bold "-> Starting the rfvm1 virtual machine..."
 # Create the rfclient dir
 mkdir /var/lib/lxc/rfvm1/rootfs/opt/rfclient
 
+# Make the rfclient
+make rfclient
+
 # Copy the rfclient executable
 cp build/rfclient /var/lib/lxc/rfvm1/rootfs/opt/rfclient/rfclient
 
@@ -125,6 +128,10 @@ lxc-start -n b2 -d
 ovs-vsctl add-br switch1
 ovs-vsctl add-port switch1 b1.0
 ovs-vsctl add-port switch1 b2.0
+echo "Wait untill b1 and b2 are running."
+lxc-wait -n b1 -s RUNNING
+lxc-wait -n b2 -s RUNNING
+sleep 5
 ovs-vsctl set Bridge switch1 other-config:datapath-id=0000000000000099
 ovs-vsctl set-controller switch1 tcp:127.0.0.1:$CONTROLLER_PORT
 ifconfig switch1 up
