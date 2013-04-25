@@ -1,5 +1,6 @@
 #!/bin/bash
-
+export http_proxy="http://proxy.atlantis.ugent.be:8080"
+export HTTP_PROXY="http://proxy.atlantis.ugent.be:8080"
 if [ "$EUID" != "0" ]; then
   echo "You must be root to run this script. Sorry, dude!"
   exit 1
