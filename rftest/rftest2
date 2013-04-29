@@ -54,10 +54,10 @@ reset() {
     fi
 
     ovs-vsctl del-br dp0 &> /dev/null;
-    ovs-vsctl del-br switchA &> /dev/null;
-    ovs-vsctl del-br switchB &> /dev/null;
-    ovs-vsctl del-br switchC &> /dev/null;
-    ovs-vsctl del-br switchD &> /dev/null;
+    #ovs-vsctl del-br switchA &> /dev/null;
+    #ovs-vsctl del-br switchB &> /dev/null;
+    #ovs-vsctl del-br switchC &> /dev/null;
+    #ovs-vsctl del-br switchD &> /dev/null;
     ovs-vsctl emer-reset &> /dev/null;
 
     #echo_bold "-> Stopping and resetting LXC VMs...";
@@ -66,20 +66,20 @@ reset() {
     lxc-shutdown -n rfvmC;
     lxc-shutdown -n rfvmD;
 
-	lxc-shutdown -n h1;
-	lxc-shutdown -n h2;
-	lxc-shutdown -n h3;
-	lxc-shutdown -n h4;
+	#lxc-shutdown -n h1;
+	#lxc-shutdown -n h2;
+	#lxc-shutdown -n h3;
+	#lxc-shutdown -n h4;
 
     lxc-stop -n rfvmA;
     lxc-stop -n rfvmB;
     lxc-stop -n rfvmC;
     lxc-stop -n rfvmD;
 
-	lxc-stop -n h1;
-	lxc-stop -n h2;
-	lxc-stop -n h3;
-	lxc-stop -n h4;
+	#lxc-stop -n h1;
+	#lxc-stop -n h2;
+	#lxc-stop -n h3;
+	#lxc-stop -n h4;
 
     echo_bold "-> Deleting (previous) run data...";
     mongo db --eval "
@@ -153,10 +153,10 @@ lxc-start -n rfvmB -d
 lxc-start -n rfvmC -d
 lxc-start -n rfvmD -d
 
-lxc-start -n h1 -d
-lxc-start -n h2 -d
-lxc-start -n h3 -d
-lxc-start -n h4 -d
+#lxc-start -n h1 -d
+#lxc-start -n h2 -d
+#lxc-start -n h3 -d
+#lxc-start -n h4 -d
 
 echo_bold "WAIT FOR CONTAINERS TO RUN"
 lxc-wait -n rfvmA -s RUNNING
@@ -164,14 +164,14 @@ lxc-wait -n rfvmB -s RUNNING
 lxc-wait -n rfvmC -s RUNNING
 lxc-wait -n rfvmD -s RUNNING
 
-lxc-wait -n h1 -s RUNNING
-lxc-wait -n h2 -s RUNNING
-lxc-wait -n h3 -s RUNNING
-lxc-wait -n h4 -s RUNNING
-
-echo "sleeping for 10 secs"
-sleep 10
-
+#lxc-wait -n h1 -s RUNNING
+#lxc-wait -n h2 -s RUNNING
+#lxc-wait -n h3 -s RUNNING
+#lxc-wait -n h4 -s RUNNING
+#
+#echo "sleeping for 10 secs"
+#sleep 10
+#
 echo_bold "-> Starting the controller and RFPRoxy..."
 cd pox
 ./pox.py --no-cli log.level --=INFO topology openflow.topology openflow.discovery rfproxy rfstats &
@@ -180,7 +180,7 @@ wait_port_listen $CONTROLLER_PORT
 
 echo_bold "-> Starting RFServer..."
 ./rfserver/rfserver.py rftest/rftest2config.csv &
-sleep 10
+#sleep 10
 echo_bold "-> Starting the control plane network (dp0 VS)..."
 ovs-vsctl add-br dp0
 ovs-vsctl add-port dp0 rfvmA.1
@@ -197,83 +197,83 @@ ovs-vsctl add-port dp0 rfvmD.1
 ovs-vsctl add-port dp0 rfvmD.2
 ovs-vsctl add-port dp0 rfvmD.3
 ovs-vsctl add-port dp0 rfvmD.4
-echo_bold "-> wait for adding controller to dp0"
-sleep 5
+#echo_bold "-> wait for adding controller to dp0"
+#sleep 5
 echo_bold "-> adding controller to dp0"
 ovs-vsctl set Bridge dp0 other-config:datapath-id=7266767372667673
 ovs-vsctl set-controller dp0 tcp:127.0.0.1:$CONTROLLER_PORT
 
 
-ovs-vsctl add-br switchA
-ovs-vsctl add-br switchB
-ovs-vsctl add-br switchC
-ovs-vsctl add-br switchD
-
-ovs-vsctl add-port switchA h1.0
-ovs-vsctl add-port switchB h2.0
-ovs-vsctl add-port switchC h3.0
-ovs-vsctl add-port switchD h4.0
-
-
-ip link add name sa.2 type veth peer name sb.2
-ip link add name sb.3 type veth peer name sd.2
-ip link add name sc.2 type veth peer name sd.3
-ip link add name sa.3 type veth peer name sc.3
-ip link add name sa.4 type veth peer name sd.4
-
-ifconfig sa.2 up
-ifconfig sa.3 up
-ifconfig sa.4 up
-ifconfig sb.2 up
-ifconfig sb.3 up
-ifconfig sc.2 up
-ifconfig sc.3 up
-ifconfig sd.2 up
-ifconfig sd.3 up
-ifconfig sd.4 up
-
-ovs-vsctl add-port switchA sa.2
-ovs-vsctl add-port switchA sa.3
-ovs-vsctl add-port switchA sa.4
-
-ovs-vsctl add-port switchB sb.2
-ovs-vsctl add-port switchB sb.3
-
-ovs-vsctl add-port switchC sc.2
-ovs-vsctl add-port switchC sc.3
-
-ovs-vsctl add-port switchD sd.2
-ovs-vsctl add-port switchD sd.3
-ovs-vsctl add-port switchD sd.4
-
-
-echo_bold "Wait for h[1-4] to be running"
-lxc-wait -n h1 -s RUNNING
-lxc-wait -n h2 -s RUNNING
-lxc-wait -n h3 -s RUNNING
-lxc-wait -n h4 -s RUNNING
-
-sleep 10
-echo_bold "-> adding controller to switchA"
-
-ovs-vsctl set Bridge switchA other-config:datapath-id=0000000000000008
-ovs-vsctl set-controller switchA tcp:127.0.0.1:$CONTROLLER_PORT
-
-sleep 10
-echo_bold "-> adding controller to switchB"
-ovs-vsctl set Bridge switchB other-config:datapath-id=0000000000000007
-ovs-vsctl set-controller switchB tcp:127.0.0.1:$CONTROLLER_PORT
-
-sleep 10
-echo_bold "-> adding controller to switchC"
-ovs-vsctl set Bridge switchC other-config:datapath-id=0000000000000006
-ovs-vsctl set-controller switchC tcp:127.0.0.1:$CONTROLLER_PORT
-
-sleep 10
-echo_bold "-> adding controller to switchD"
-ovs-vsctl set Bridge switchD other-config:datapath-id=0000000000000005
-ovs-vsctl set-controller switchD tcp:127.0.0.1:$CONTROLLER_PORT
-
+#ovs-vsctl add-br switchA
+#ovs-vsctl add-br switchB
+#ovs-vsctl add-br switchC
+#ovs-vsctl add-br switchD
+#
+#ovs-vsctl add-port switchA h1.0
+#ovs-vsctl add-port switchB h2.0
+#ovs-vsctl add-port switchC h3.0
+#ovs-vsctl add-port switchD h4.0
+#
+#
+#ip link add name sa.2 type veth peer name sb.2
+#ip link add name sb.3 type veth peer name sd.2
+#ip link add name sc.2 type veth peer name sd.3
+#ip link add name sa.3 type veth peer name sc.3
+#ip link add name sa.4 type veth peer name sd.4
+#
+#ifconfig sa.2 up
+#ifconfig sa.3 up
+#ifconfig sa.4 up
+#ifconfig sb.2 up
+#ifconfig sb.3 up
+#ifconfig sc.2 up
+#ifconfig sc.3 up
+#ifconfig sd.2 up
+#ifconfig sd.3 up
+#ifconfig sd.4 up
+#
+#ovs-vsctl add-port switchA sa.2
+#ovs-vsctl add-port switchA sa.3
+#ovs-vsctl add-port switchA sa.4
+#
+#ovs-vsctl add-port switchB sb.2
+#ovs-vsctl add-port switchB sb.3
+#
+#ovs-vsctl add-port switchC sc.2
+#ovs-vsctl add-port switchC sc.3
+#
+#ovs-vsctl add-port switchD sd.2
+#ovs-vsctl add-port switchD sd.3
+#ovs-vsctl add-port switchD sd.4
+#
+#
+#echo_bold "Wait for h[1-4] to be running"
+#lxc-wait -n h1 -s RUNNING
+#lxc-wait -n h2 -s RUNNING
+#lxc-wait -n h3 -s RUNNING
+#lxc-wait -n h4 -s RUNNING
+#
+#sleep 10
+#echo_bold "-> adding controller to switchA"
+#
+#ovs-vsctl set Bridge switchA other-config:datapath-id=0000000000000008
+#ovs-vsctl set-controller switchA tcp:127.0.0.1:$CONTROLLER_PORT
+#
+#sleep 10
+#echo_bold "-> adding controller to switchB"
+#ovs-vsctl set Bridge switchB other-config:datapath-id=0000000000000007
+#ovs-vsctl set-controller switchB tcp:127.0.0.1:$CONTROLLER_PORT
+#
+#sleep 10
+#echo_bold "-> adding controller to switchC"
+#ovs-vsctl set Bridge switchC other-config:datapath-id=0000000000000006
+#ovs-vsctl set-controller switchC tcp:127.0.0.1:$CONTROLLER_PORT
+#
+#sleep 10
+#echo_bold "-> adding controller to switchD"
+#ovs-vsctl set Bridge switchD other-config:datapath-id=0000000000000005
+#ovs-vsctl set-controller switchD tcp:127.0.0.1:$CONTROLLER_PORT
+#
 echo_bold "---"
 echo_bold "This test is up and running."
 #echo_bold "Start Mininet:"
